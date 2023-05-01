@@ -35,8 +35,11 @@ public class PauseMenu : MenuBase<PauseMenu>
 
     public void ShowPauseMenu(InputAction.CallbackContext context)
     {
-        if (context.performed)
-            menuCanvas.gameObject.SetActive(true);
+        if (context.performed && PlayableSceneLoaded())
+        {
+            var active = menuCanvas.gameObject.activeSelf;
+            menuCanvas.gameObject.SetActive(!active); // toggle pause menu
+        }
     }
 
     private void Continue(Button continueButton)
@@ -51,12 +54,27 @@ public class PauseMenu : MenuBase<PauseMenu>
         for (int s = 0; s < SceneManager.sceneCount; s++)
         {
             var scene = SceneManager.GetSceneAt(s);
-            if (scene.buildIndex == 1)
+            if (scene.buildIndex > 0)
             {
-                SceneManager.UnloadSceneAsync(1);
+                SceneManager.UnloadSceneAsync(scene.buildIndex);
                 break;
             }
         }
         
+    }
+
+    private bool PlayableSceneLoaded()
+    {
+        var playableSceneLoaded = false;
+        for (int s = 0; s < SceneManager.sceneCount; s++)
+        {
+            var scene = SceneManager.GetSceneAt(s);
+            if (scene.buildIndex >= 1)
+            {
+                playableSceneLoaded = true;
+                break;
+            }
+        }
+        return playableSceneLoaded;
     }
 }
